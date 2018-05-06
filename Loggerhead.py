@@ -300,17 +300,17 @@ while True:
               pitch_avg = pitchs / count
           
               motorid=0
-              p=PID()
-              p.setKp=3
-              p.setKi=0
-              p.setKd=0
-              p.setpoint=0
-              roll_pid=p.update(roll_avg)
-              print(roll_pid)
+              #p=PID()
+              #p.setKp=3
+              #p.setKi=0
+              #p.setKd=0
+              #p.setpoint=0
+              #roll_pid=p.update(roll_avg)
+              #print(roll_pid)
               offset= 90 + (roll_avg/90)*45
-              speed=10
-              print(b'%d%03d%03dn' %(motorid,offset,speed))
-              ser.write(b'%d%03d%03dn' %(motorid,offset,speed)) 
+              speed=5
+              print(b'm%d%03d%03dn' %(motorid,offset,speed))
+              ser.write(b'm%d%03d%03dn' %(motorid,offset,speed)) 
               rolls = 0
               pitchs = 0
               count = 1
