@@ -7,7 +7,7 @@
 
 void motor_move_to_angle(int motorid, int targetangle, int speeds,int currentpos);
 void motor_sweep(int motorid, int offset, int speeds);
-
+void serialEvent();
 
 char tbs[600];
 
@@ -24,7 +24,7 @@ Servo myservomiddleR;
 
 int pos;    
 int n;
-int speeds=10;
+int speeds=20;
 int originalpos=90;
 int currentpos[6];
 char read_data[10];
@@ -33,13 +33,17 @@ int motorid=0;
 int rd;
 int ndx = 0;
 int current=offset;
+boolean newData = false;
+char input;
+int input_count=0;
 void setup(void) 
 {
 #ifndef ESP8266
   while (!Serial);     // will pause Zero, Leonardo, etc until serial console opens
 #endif
-  Serial.begin(9600);
 
+  Serial.begin(9600);
+  
   myservomiddleL.attach(9);  //connect servo to pins
   myservorearR.attach(8);
   myservorearL.attach(7);
@@ -60,48 +64,55 @@ void setup(void)
 
 
 void loop(void){
-  
-  char input;
-  Serial.println('r');
-  delay(20);
-  while(Serial.available()>0 ){
-     input = Serial.read();
-     if (input == 'm'){
+
+  while (Serial.available() > 8 && input_count < 3){
+    String waste_data = Serial.readString();
+    input_count++;
+  }
+  input_count=0;
+  Serial.print(Serial.available());
+  while(Serial.available() && !newData ){
+     
+     input = (char)Serial.read();
       //Serial.println("success");
-      boolean newData = false;
-        if (Serial.available() > 0){
-           while(Serial.available() > 0 && newData == false){
-            
-              rd= Serial.read();
-              if (rd != 'n'){
-                read_data[ndx] = rd;
-                Serial.print("the char is: ");Serial.println(read_data[ndx]);
-                ndx++;
-              }
-              else{
-                newData = true;
-                ndx=0;
-              }
-            }
-        }
+     read_data[ndx] = input;
+     //Serial.print("the char is: ");Serial.println(read_data[ndx]);
+     ndx++;
+          
+     if (input == 'n'){
+       if (ndx== 8){
+        newData = true;
+       }
+       else{
+        newData = false;
+        ndx = 0;
+       }
+     }
+     if (ndx==9 && !newData){
+       ndx = 0;
+     }
+     if(newData == true){
         motorid = ((int) read_data[0]-48);
-        Serial.print("Motor ID is:");Serial.println(motorid);
+        //Serial.print("Motor ID is:");Serial.println(motorid);
         offset = ((int)read_data[1]-48)*100 + ((int)read_data[2]-48)*10 + (int)read_data[3]-48;
-        Serial.print("offset is:");Serial.println(offset);
+        //Serial.print("offset is:");Serial.println(offset);
         speeds = ((int)read_data[4]-48)*100 + ((int)read_data[5]-48)*10 + (int)read_data[6]-48;
-        Serial.print("time delay is:");Serial.println(speeds);
+        //Serial.print("time delay is:");Serial.println(speeds);
         //motor_function(motorid,targetpos,speeds,currentpos);
-      }
+        ndx = 0;
+        Serial.flush();
+     }
+  }
 
      
-     }
-             if (current != offset){
-               motor_move_to_angle(motorid, offset, speeds,current);
-             }
-             motor_sweep(motorid,offset,speeds);
-             current = offset;
+     
+    if (current != offset){
+        motor_move_to_angle(motorid, offset, speeds,current);
+    }
+    motor_sweep(motorid,offset,speeds);
+    newData = false;
 
-
+    current = offset;
 }
 
 
@@ -116,15 +127,21 @@ void motor_sweep(int motorid, int offset, int speeds) {      // controlling moto
   pos = offset;
   for (pos = offset; pos <= offset+35; pos ++) { 
       // in steps of 1 degree
-      Motors[motorid].write(pos);              
+      Motors[0].write(pos);
+      Motors[4].write(pos);
+      Motors[5].write(pos);      
       delay(n);       //   one degree / delay time n     1 degree /10ms == 100 degree / s        
   }
   for (pos = offset+35; pos >= offset-35; pos --) { 
-      Motors[motorid].write(pos);              
+      Motors[0].write(pos);
+      Motors[4].write(pos);
+      Motors[5].write(pos);
       delay(n);                      
   }
   for (pos = offset-35; pos <= offset; pos ++) { 
-      Motors[motorid].write(pos);              
+      Motors[0].write(pos);
+      Motors[4].write(pos);
+      Motors[5].write(pos);
       delay(n);                      
   }
   
@@ -137,14 +154,19 @@ void motor_move_to_angle(int motorid, int targetangle, int speeds,int currentpos
   if (currentpos < targetangle){
     for (pos = currentpos; pos <= targetangle; pos ++) { 
       // in steps of 1 degree
-      Motors[motorid].write(pos);              
+      Motors[0].write(pos);
+      Motors[4].write(pos);
+      Motors[5].write(pos);
       delay(n);             
     }
   }
   else{
       for (pos = currentpos; pos >= targetangle; pos --) { 
-      Motors[motorid].write(pos);              
-      delay(n);                      
+      Motors[0].write(pos);
+      Motors[4].write(pos);
+      Motors[5].write(pos);
+      delay(n);
+      
   }
   }
   
