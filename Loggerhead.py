@@ -10,12 +10,13 @@ import os
 import PID
 from PID import *
 
-ser = serial.Serial('/dev/ttyACM0',9600)
-count=1
+ser = serial.Serial('/dev/ttyACM2',9600)
+count=0
 
+offset = 90
 speed = 10
-rolls=0;
-pitchs=0;
+rolls=[0]*5
+pitchs=[0]*5
 IMU_upside_down = 0     # Change calculations depending on IMu orientation. 
                                                 # 0 = Correct side up. This is when the skull logo is facing down
                                                 # 1 = Upside down. This is when the skull logo is facing up 
@@ -224,8 +225,9 @@ while True:
         #Complementary filter used to combine the accelerometer and gyro values.
         CFangleX=AA*(CFangleX+rate_gyr_x*LP) +(1 - AA) * AccXangle
         CFangleY=AA*(CFangleY+rate_gyr_y*LP) +(1 - AA) * AccYangle
-        rolls=rolls+CFangleX
-        pitchs=pitchs+CFangleY
+        index = count % 5
+        rolls.insert(index,CFangleX) 
+        pitchs.insert(index,CFangleY)
         count = count + 1
 
 
@@ -294,26 +296,29 @@ while True:
 
         #slow program down a bit, makes the output more readable
         time.sleep(0.03)
-        read_serial = ser.readline()
-        if read_serial[0] == 'r':
-              roll_avg = rolls / count
-              pitch_avg = pitchs / count
+        previous=count-1;
+        if abs((rolls[(previous % 5)] - rolls[(count % 5)])) >= 1 and count>=5:
+              roll_avg = (rolls[0]+rolls[1]+rolls[2]+rolls[3]+rolls[4]) / 5
+              pitch_avg = (pitchs[0]+pitchs[1]+pitchs[2]+pitchs[3]+pitchs[4]) / 5
           
               motorid=0
-              p=PID()
-              p.setKp=3
-              p.setKi=0
-              p.setKd=0
-              p.setpoint=0
-              roll_pid=p.update(roll_avg)
-              print(roll_pid)
-              offset= 90 + (roll_avg/90)*45
-              speed=10
-              print(b'%d%03d%03dn' %(motorid,offset,speed))
-              ser.write(b'%d%03d%03dn' %(motorid,offset,speed)) 
-              rolls = 0
-              pitchs = 0
-              count = 1
+              #p=PID()
+              #p.setKp=3
+              #p.setKi=0
+              #p.setKd=0
+              #p.setpoint=0
+              #roll_pid=p.update(roll_avg)
+              #print(roll_pid)
+              pre_offset = offset
+              offset= int(90 + (roll_avg/90)*45)
+              speed=20
+              if (offset != pre_offset):
+                  print(b'%d%03d%03dn' %(motorid,offset,speed))
+                  ser.write(b'%d%03d%03dn' %(motorid,offset,speed))
+                  time.sleep(0.7)
+              
+              
+              count = count%5 + 1
           #read_serial= ser.readline()
           #print (read_serial)
  #         motor = []
