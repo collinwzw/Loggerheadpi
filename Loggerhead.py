@@ -309,6 +309,7 @@ while True:
               #p.setpoint=0
               #roll_pid=p.update(roll_avg)
               #print(roll_pid)
+<<<<<<< HEAD
               pre_offset = offset
               offset= int(90 + (roll_avg/90)*45)
               speed=20
@@ -319,6 +320,15 @@ while True:
               
               
               count = count%5 + 1
+=======
+              offset= 90 + (roll_avg/90)*45
+              speed=5
+              print(b'm%d%03d%03dn' %(motorid,offset,speed))
+              ser.write(b'm%d%03d%03dn' %(motorid,offset,speed)) 
+              rolls = 0
+              pitchs = 0
+              count = 1
+>>>>>>> 7c1c29ff45979a0dc537f4883a101ee410b68bce
           #read_serial= ser.readline()
           #print (read_serial)
  #         motor = []
