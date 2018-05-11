@@ -35,6 +35,10 @@ int ndx = 0;
 int current=offset;
 boolean newData = false;
 char input;
+<<<<<<< HEAD
+char wasted_data;
+=======
+>>>>>>> 111074b43141c0df7f2ff40f5adbde91fe9ba70d
 int input_count=0;
 void setup(void) 
 {
@@ -42,7 +46,11 @@ void setup(void)
   while (!Serial);     // will pause Zero, Leonardo, etc until serial console opens
 #endif
 
+<<<<<<< HEAD
+  Serial.begin(115200);
+=======
   Serial.begin(9600);
+>>>>>>> 111074b43141c0df7f2ff40f5adbde91fe9ba70d
   
   myservomiddleL.attach(9);  //connect servo to pins
   myservorearR.attach(8);
@@ -65,8 +73,13 @@ void setup(void)
 
 void loop(void){
 
+<<<<<<< HEAD
+  while (Serial.available() > 8 && input_count < 24){
+    wasted_data = Serial.read();
+=======
   while (Serial.available() > 8 && input_count < 3){
     String waste_data = Serial.readString();
+>>>>>>> 111074b43141c0df7f2ff40f5adbde91fe9ba70d
     input_count++;
   }
   input_count=0;

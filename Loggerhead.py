@@ -10,7 +10,11 @@ import os
 import PID
 from PID import *
 
+<<<<<<< HEAD
+ser = serial.Serial('/dev/ttyACM2',115200)
+=======
 ser = serial.Serial('/dev/ttyACM2',9600)
+>>>>>>> 111074b43141c0df7f2ff40f5adbde91fe9ba70d
 count=0
 
 offset = 90
@@ -310,6 +314,9 @@ while True:
               #roll_pid=p.update(roll_avg)
               #print(roll_pid)
 <<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> 111074b43141c0df7f2ff40f5adbde91fe9ba70d
               pre_offset = offset
               offset= int(90 + (roll_avg/90)*45)
               speed=20
@@ -320,6 +327,8 @@ while True:
               
               
               count = count%5 + 1
+<<<<<<< HEAD
+=======
 =======
               offset= 90 + (roll_avg/90)*45
               speed=5
@@ -329,6 +338,7 @@ while True:
               pitchs = 0
               count = 1
 >>>>>>> 7c1c29ff45979a0dc537f4883a101ee410b68bce
+>>>>>>> 111074b43141c0df7f2ff40f5adbde91fe9ba70d
           #read_serial= ser.readline()
           #print (read_serial)
  #         motor = []
