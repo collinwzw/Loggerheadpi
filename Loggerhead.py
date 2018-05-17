@@ -10,14 +10,12 @@ import os
 import PID
 from PID import *
 
-<<<<<<< HEAD
-ser = serial.Serial('/dev/ttyACM2',115200)
-=======
-ser = serial.Serial('/dev/ttyACM2',9600)
->>>>>>> 111074b43141c0df7f2ff40f5adbde91fe9ba70d
+
+ser = serial.Serial('/dev/ttyACM0',9600)
 count=0
 
-offset = 90
+roll_offset = 90
+pitch_offset = 90
 speed = 10
 rolls=[0]*5
 pitchs=[0]*5
@@ -152,9 +150,9 @@ while True:
         acc_medianTable2Z.sort()
 
         # The middle value is the value we are interested in
-        ACCx = acc_medianTable2X[ACC_MEDIANTABLESIZE/2];
-        ACCy = acc_medianTable2Y[ACC_MEDIANTABLESIZE/2];
-        ACCz = acc_medianTable2Z[ACC_MEDIANTABLESIZE/2];
+        ACCx = (int) (acc_medianTable2X[ACC_MEDIANTABLESIZE/2])
+        ACCy =  acc_medianTable2Y[ACC_MEDIANTABLESIZE/2]
+        ACCz =  acc_medianTable2Z[ACC_MEDIANTABLESIZE/2]
 
 
 
@@ -305,40 +303,27 @@ while True:
               roll_avg = (rolls[0]+rolls[1]+rolls[2]+rolls[3]+rolls[4]) / 5
               pitch_avg = (pitchs[0]+pitchs[1]+pitchs[2]+pitchs[3]+pitchs[4]) / 5
           
+              #print(roll_avg)
               motorid=0
               #p=PID()
-              #p.setKp=3
-              #p.setKi=0
-              #p.setKd=0
+              #p.__init__
               #p.setpoint=0
               #roll_pid=p.update(roll_avg)
               #print(roll_pid)
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> 111074b43141c0df7f2ff40f5adbde91fe9ba70d
-              pre_offset = offset
-              offset= int(90 + (roll_avg/90)*45)
-              speed=20
-              if (offset != pre_offset):
-                  print(b'%d%03d%03dn' %(motorid,offset,speed))
-                  ser.write(b'%d%03d%03dn' %(motorid,offset,speed))
+              
+              pre_roll_offset = roll_offset
+	      pre_pitch_offset = pitch_offset
+              roll_offset= int(90 + (roll_avg/90)*45)
+              pitch_offset= int(90 + (pitch_avg/90)*45)
+              speed=15
+              if (roll_offset != pre_roll_offset or pitch_offset != pre_pitch_offset ):
+                  print(b'%d%03d%03d%03dn' %(motorid,roll_offset,pitch_offset,speed))
+                  ser.write(b'%d%03d%03d%03dn' %(motorid,roll_offset,pitch_offset,speed))
                   time.sleep(0.7)
               
               
               count = count%5 + 1
-<<<<<<< HEAD
-=======
-=======
-              offset= 90 + (roll_avg/90)*45
-              speed=5
-              print(b'm%d%03d%03dn' %(motorid,offset,speed))
-              ser.write(b'm%d%03d%03dn' %(motorid,offset,speed)) 
-              rolls = 0
-              pitchs = 0
-              count = 1
->>>>>>> 7c1c29ff45979a0dc537f4883a101ee410b68bce
->>>>>>> 111074b43141c0df7f2ff40f5adbde91fe9ba70d
+
           #read_serial= ser.readline()
           #print (read_serial)
  #         motor = []

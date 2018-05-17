@@ -5,11 +5,11 @@
 #include <string.h>
 
 
-void motor_move_to_angle(int motorid, int targetangle, int speeds,int currentpos);
-void motor_sweep(int motorid, int offset, int speeds);
+void motor_move_to_angle(int motorid, int roll_targetangle,int pitch_targetangle, int speeds,int roll_currentpos, int pitch_currentpos);
+void motor_sweep(int motorid, int roll_offset,int pitch_offset, int speeds, int dir);
 void serialEvent();
 
-char tbs[600];
+char tbs[500];
 
 
 
@@ -21,36 +21,33 @@ Servo myservorearL;
 Servo myservofrontL;
 Servo myservofrontR;
 Servo myservomiddleR;
-
-int pos;    
+  
 int n;
-int speeds=20;
+int pos;
+int speeds=10;
 int originalpos=90;
 int currentpos[6];
-char read_data[10];
+char read_data[15];
 int offset=90;
 int motorid=0;
 int rd;
 int ndx = 0;
-int current=offset;
+int roll_current=offset-35;
+int pitch_current=offset-35;
 boolean newData = false;
 char input;
-<<<<<<< HEAD
 char wasted_data;
-=======
->>>>>>> 111074b43141c0df7f2ff40f5adbde91fe9ba70d
 int input_count=0;
+int dir=0;
+int roll_offset = offset;
+int pitch_offset = offset;
 void setup(void) 
 {
 #ifndef ESP8266
   while (!Serial);     // will pause Zero, Leonardo, etc until serial console opens
 #endif
 
-<<<<<<< HEAD
-  Serial.begin(115200);
-=======
   Serial.begin(9600);
->>>>>>> 111074b43141c0df7f2ff40f5adbde91fe9ba70d
   
   myservomiddleL.attach(9);  //connect servo to pins
   myservorearR.attach(8);
@@ -73,16 +70,12 @@ void setup(void)
 
 void loop(void){
 
-<<<<<<< HEAD
-  while (Serial.available() > 8 && input_count < 24){
+  while (Serial.available() > 11 && input_count < 33){
     wasted_data = Serial.read();
-=======
-  while (Serial.available() > 8 && input_count < 3){
-    String waste_data = Serial.readString();
->>>>>>> 111074b43141c0df7f2ff40f5adbde91fe9ba70d
     input_count++;
   }
   input_count=0;
+  
   Serial.print(Serial.available());
   while(Serial.available() && !newData ){
      
@@ -93,7 +86,7 @@ void loop(void){
      ndx++;
           
      if (input == 'n'){
-       if (ndx== 8){
+       if (ndx== 10){
         newData = true;
        }
        else{
@@ -101,17 +94,18 @@ void loop(void){
         ndx = 0;
        }
      }
-     if (ndx==9 && !newData){
+     if (ndx==11 && !newData){
        ndx = 0;
      }
      if(newData == true){
         motorid = ((int) read_data[0]-48);
         //Serial.print("Motor ID is:");Serial.println(motorid);
-        offset = ((int)read_data[1]-48)*100 + ((int)read_data[2]-48)*10 + (int)read_data[3]-48;
-        //Serial.print("offset is:");Serial.println(offset);
-        speeds = ((int)read_data[4]-48)*100 + ((int)read_data[5]-48)*10 + (int)read_data[6]-48;
+        roll_offset = ((int)read_data[1]-48)*100 + ((int)read_data[2]-48)*10 + (int)read_data[3]-48;
+        Serial.print("offset is:");Serial.println(offset);
+        pitch_offset = ((int)read_data[4]-48)*100 + ((int)read_data[5]-48)*10 + (int)read_data[6]-48;
         //Serial.print("time delay is:");Serial.println(speeds);
         //motor_function(motorid,targetpos,speeds,currentpos);
+	speeds = ((int)read_data[7]-48)*100 + ((int)read_data[8]-48)*10 + (int)read_data[9]-48;
         ndx = 0;
         Serial.flush();
      }
@@ -119,17 +113,23 @@ void loop(void){
 
      
      
-    if (current != offset){
-        motor_move_to_angle(motorid, offset, speeds,current);
+    if (roll_current != roll_offset-35 || pitch_current != pitch_offset - 35){
+        motor_move_to_angle(motorid, roll_offset-35,pitch_offset-35, speeds,roll_current, pitch_current);
     }
-    motor_sweep(motorid,offset,speeds);
+    motor_sweep(motorid,roll_offset,pitch_offset, speeds,dir);
     newData = false;
+    
+    
 
-    current = offset;
+    	
+    roll_current = roll_offset-35;
+    pitch_current = pitch_offset-35;
+
 }
 
 
-void motor_sweep(int motorid, int offset, int speeds) {      // controlling motor to sweep
+
+void motor_sweep(int motorid, int roll_offset,int pitch_offset, int speeds, int dir) {      // controlling motor to sweep
   n=speeds; // delay time period for movement of every degree
   
   //Serial.println("in motor function");
@@ -137,46 +137,73 @@ void motor_sweep(int motorid, int offset, int speeds) {      // controlling moto
   //Serial.print("offset is:");Serial.println(offset);
   //Serial.print("time delay is:");Serial.println(speeds);
   
-  pos = offset;
-  for (pos = offset; pos <= offset+35; pos ++) { 
+ int roll_pos = roll_offset;
+ // if (dir == 1){
+  for (int i = -35; i <= 35; i ++) { 
       // in steps of 1 degree
-      Motors[0].write(pos);
-      Motors[4].write(pos);
-      Motors[5].write(pos);      
+      Motors[5].write(roll_pos + i);
+      Motors[0].write((roll_pos + i));
+      //Motors[5].write(pos);      
       delay(n);       //   one degree / delay time n     1 degree /10ms == 100 degree / s        
   }
-  for (pos = offset+35; pos >= offset-35; pos --) { 
-      Motors[0].write(pos);
-      Motors[4].write(pos);
-      Motors[5].write(pos);
+  for (int i = 35; i >= -35; i --) { 
+      Motors[5].write(roll_pos + i);
+      Motors[0].write( (roll_pos + i));
+      //Motors[5].write(pos);
       delay(n);                      
   }
+/*
   for (pos = offset-35; pos <= offset; pos ++) { 
       Motors[0].write(pos);
       Motors[4].write(pos);
       Motors[5].write(pos);
       delay(n);                      
   }
-  
-  //Serial.print("curr postion is:");Serial.println(pos);
-  //Serial.print("end of motor function ");   
-}
-void motor_move_to_angle(int motorid, int targetangle, int speeds,int currentpos) {      // controlling motor to specific angle.
-  n=speeds; // delay time period for movement of every degree
-  //Serial.print("in motor function");
-  if (currentpos < targetangle){
-    for (pos = currentpos; pos <= targetangle; pos ++) { 
+*/
+// }
+/*
+ else{
+   for (pos = offset; pos >= offset-35; pos --) {
       // in steps of 1 degree
       Motors[0].write(pos);
       Motors[4].write(pos);
       Motors[5].write(pos);
+      delay(n);       //   one degree / delay time n     1 degree /10ms == 100 degree / s        
+  }
+  for (pos = offset-35; pos <= offset+35; pos ++) {
+      Motors[0].write(pos);
+      Motors[4].write(pos);
+      Motors[5].write(pos);
+      delay(n);
+  }
+  for (pos = offset+35; pos >= offset; pos --) {
+      Motors[0].write(pos);
+      Motors[4].write(pos);
+      Motors[5].write(pos);
+      delay(n);
+  }
+ }
+  */
+  //Serial.print("curr postion is:");Serial.println(pos);
+  //Serial.print("end of motor function ");   
+}
+
+void motor_move_to_angle(int motorid, int roll_targetangle,int pitch_targetangle, int speeds,int roll_currentpos,int pitch_currentpos) {      // controlling motor to specific angle.
+  n=speeds; // delay time period for movement of every degree
+  //Serial.print("in motor function");
+  if (roll_currentpos < roll_targetangle || pitch_currentpos < pitch_targetangle){
+    for (pos = roll_currentpos+1; pos <= roll_targetangle; pos ++) { 
+      // in steps of 1 degree
+      Motors[0].write( pos);
+      //Motors[4].write(pos);
+      Motors[5].write(pos);
       delay(n);             
     }
   }
-  else{
-      for (pos = currentpos; pos >= targetangle; pos --) { 
-      Motors[0].write(pos);
-      Motors[4].write(pos);
+  else if(roll_currentpos > roll_targetangle || pitch_currentpos > pitch_targetangle){
+      for (pos = roll_currentpos-1; pos >= roll_targetangle; pos --) { 
+      Motors[0].write( pos);
+      //Motors[4].write(pos);
       Motors[5].write(pos);
       delay(n);
       
